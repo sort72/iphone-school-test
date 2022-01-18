@@ -45,6 +45,58 @@ abstract class BadgeHelper
 
     /**
      * @param User $user
+     * @return string
+     */
+    public static function getUserUnlockedAchievements(User $user)
+    {
+        $total_unlocked = [];
+        foreach (self::$achievements as $class => $relationship) {
+            $achievement = new $class();
+            $total_unlocked[] = implode(",", $achievement->unlockedAchievementsList(count($user->$relationship)));
+        }
+
+        return $total_unlocked;
+    }
+
+    /**
+     * @param User $user
+     * @return string
+     */
+    public static function getUserNextAchievements(User $user)
+    {
+        $next_list = [];
+        foreach (self::$achievements as $class => $relationship) {
+            $achievement = new $class();
+            $next_list[] = $achievement->nextAchievement(count($user->$relationship));
+        }
+
+        return $next_list;
+    }
+
+    /**
+     * @param User $user
+     * @param bool $return_remaining Whether return the badge name or the remaining achievements quantity to get it
+     * @return string|int
+     */
+    public static function getUserNextBadgeLevel(User $user, $return_remaining = false)
+    {
+        $current_level = self::getUserBadgeLevel($user, false);
+
+        $levels = array_keys(self::$badges);
+        $current_level = array_search($current_level, $levels);
+        $next_level = "";
+        if(isset($levels[$current_level - 1])) {
+            $next_level = $levels[$current_level - 1];
+            if(! $return_remaining) $next_level = self::$badges[$next_level];
+            else $next_level = $next_level - self::getUserAchievementsQuantity($user);
+        }
+
+        return $next_level;
+
+    }
+
+    /**
+     * @param User $user
      * @param bool $return_name Whether return the badge name or the required achievements quantity
      * @return string|int
      */
@@ -77,6 +129,7 @@ abstract class BadgeHelper
         return $level;
     }
 
+
     /**
      * Check if a quantity of achievements unlocks a new badge
      * @param int $quantity
@@ -86,4 +139,5 @@ abstract class BadgeHelper
     {
         return isset(self::$badges[$quantity]);
     }
+
 }

@@ -42,15 +42,13 @@ abstract class AchievementHelper
     public function unlockedAchievementsList($quantity)
     {
         $achievements = [];
-
-        foreach (array_reverse($this->achievementLevels) as $quantity_required => $name) {
+        foreach ($this->achievementLevels as $quantity_required => $name) {
             if($quantity >= $quantity_required) {
                 $achievements[$quantity_required] = $name;
             }
-            else break;
         }
 
-        return $achievements;
+        return array_reverse($achievements);
     }
 
     /**
