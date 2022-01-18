@@ -168,16 +168,39 @@ class AchievementTest extends TestCase
 
         $comments_quantity = 5;
         $lessons_quantity = 12;
+        $expected_badge = 4; // 3 comment achievements, 3 lesson achievements = 6 achievements. Badge would be Intermediate (4 achievements)
 
         $user = User::factory()->has(Comment::factory()->count($comments_quantity), 'comments')->hasAttached(Lesson::factory()->count($lessons_quantity), ['watched' => true], 'watched')->create();
 
         $this->assertEquals($comments_quantity, count($user->comments));
         $this->assertEquals($lessons_quantity, count($user->watched));
 
-        $achievements = BadgeHelper::get_achievements();
+        $badge = BadgeHelper::getUserBadgeLevel($user, false);
 
-        // foreach ($variable as $key => $value) {
-        //     # code...
-        // }
+        $this->assertEquals($expected_badge, $badge);
+
+
+    }
+
+    public function test_unlocked_badge()
+    {
+        /**
+         * $key is the quantity of achievements unlocked required to get the level, $value is the quantity of achievements unlocked
+         */
+        $levels = [
+            0 => range(0, 3),
+            4 => range(4, 7),
+            8 => range(8, 9),
+            10 => range(10, 15),
+        ];
+
+        foreach ($levels as $level_value => $range_values) {
+            // Assert if level value is the needed to unlock a badge
+            $this->assertTrue(BadgeHelper::justUnlockedBadge($level_value));
+            foreach ($range_values as $value) {
+                // Assert if a value that is not the needed to unlock a badge (Ex: You unlock the badge with quantity 5 and your quantity is 6, it would assert)
+                if($value !== $level_value) $this->assertFalse(BadgeHelper::justUnlockedBadge($value));
+            }
+        }
     }
 }
