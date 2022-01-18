@@ -29,10 +29,11 @@ class CheckLessonsWatched
     public function handle(LessonWatched $event)
     {
         $total_lessons_watched = count($event->user->watched);
-        $just_unlocked = LessonWatchedHelper::justUnlockedAchievement($total_lessons_watched);
+        $achievement = new LessonWatchedHelper();
+        $just_unlocked = $achievement->justUnlockedAchievement($total_lessons_watched);
 
         if($just_unlocked) {
-            $achievement_name = LessonWatchedHelper::getAchievementLevel($total_lessons_watched, false);
+            $achievement_name = $achievement->getAchievementLevel($total_lessons_watched, false);
             AchievementUnlocked::dispatch($achievement_name, $event->user);
         }
 

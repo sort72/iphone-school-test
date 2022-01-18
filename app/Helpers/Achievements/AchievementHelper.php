@@ -2,6 +2,8 @@
 
 namespace App\Helpers\Achievements;
 
+use Illuminate\Support\Facades\Log;
+
 abstract class AchievementHelper
 {
     /**
@@ -40,6 +42,25 @@ abstract class AchievementHelper
     public function justUnlockedAchievement($quantity)
     {
         return isset($this->achievementLevels[$quantity]);
+    }
+
+
+    /**
+     * Check achievements unlocked so far determined by a given quantity
+     * @param int $quantity
+     * @return int
+     */
+    public function unlockedAchievements($quantity)
+    {
+        $level = $this->getAchievementLevel($quantity);
+        $achievements = 0;
+        if($level)
+        {
+            /** Search the level in the keys of the achievement levels (Key is the quantity to unlock this level), and reverse it to get the achievements unlocked and add 1 because first element is 0 */
+            $achievements = array_search($level, array_reverse(array_keys($this->achievementLevels))) + 1;
+        }
+
+        return $achievements;
     }
 
 
