@@ -52,7 +52,7 @@ abstract class BadgeHelper
         $total_unlocked = [];
         foreach (self::$achievements as $class => $relationship) {
             $achievement = new $class();
-            $total_unlocked[] = implode(",", $achievement->unlockedAchievementsList(count($user->$relationship)));
+            $total_unlocked[] = implode(", ", $achievement->unlockedAchievementsList(count($user->$relationship)));
         }
 
         return $total_unlocked;

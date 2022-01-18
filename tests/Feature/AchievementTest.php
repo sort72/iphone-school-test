@@ -165,13 +165,6 @@ class AchievementTest extends TestCase
         }
     }
 
-    public function user_factory()
-    {
-        $comments_quantity = 5;
-        $lessons_quantity = 12;
-        return User::factory()->has(Comment::factory()->count($comments_quantity), 'comments')->hasAttached(Lesson::factory()->count($lessons_quantity), ['watched' => true], 'watched')->create();
-    }
-
     public function test_badge_level()
     {
 
@@ -179,7 +172,7 @@ class AchievementTest extends TestCase
         $lessons_quantity = 12;
         $expected_badge = 4; // 3 comment achievements, 3 lesson achievements = 6 achievements. Badge would be Intermediate (4 achievements)
 
-        $user = $this->user_factory();
+        $user = User::factory()->has(Comment::factory()->count($comments_quantity), 'comments')->hasAttached(Lesson::factory()->count($lessons_quantity), ['watched' => true], 'watched')->create();
 
         $this->assertEquals($comments_quantity, count($user->comments));
         $this->assertEquals($lessons_quantity, count($user->watched));
@@ -213,22 +206,6 @@ class AchievementTest extends TestCase
         }
     }
 
-    // public function test_dispatch_lesson_watched()
-    // {
-    //     $user = $this->user_factory();
-
-    //     LessonWatched::dispatch(Lesson::first(), $user);
-    //     $this->assertTrue(true);
-    // }
-
-    // public function test_dispatch_comment_written()
-    // {
-    //     $user = $this->user_factory();
-
-    //     CommentWritten::dispatch(Comment::first());
-    //     $this->assertTrue(true);
-    // }
-
     public function test_next_lesson_watched_achievement()
     {
         $achievement = new LessonWatchedHelper();
@@ -251,7 +228,10 @@ class AchievementTest extends TestCase
 
     public function test_achievements_endpoint()
     {
-        $user = $this->user_factory();
+        $comments_quantity = 5;
+        $lessons_quantity = 12;
+
+        $user = User::factory()->has(Comment::factory()->count($comments_quantity), 'comments')->hasAttached(Lesson::factory()->count($lessons_quantity), ['watched' => true], 'watched')->create();
 
         $response = $this->get('/users/' . $user->id . '/achievements');
 
@@ -259,6 +239,21 @@ class AchievementTest extends TestCase
 
         $content = $response->json();
 
-        Log::info([$content]);
+        $this->assertEquals('Intermediate', $content['current_badge']);
+        $this->assertEquals('Advanced', $content['next_badge']);
+        $this->assertEquals(2, $content['remaing_to_unlock_next_badge']);
+
+        $expected_unlocked_achievements = array (
+            0 => 'First Lesson Watched, 5 Lessons Watched, 10 Lessons Watched',
+            1 => 'First Comment Written, 3 Comment Written, 5 Comment Written',
+        );
+
+        $exptected_next_available_achievements = array (
+            0 => '25 Lessons Watched',
+            1 => '10 Comment Written',
+        );
+
+        $this->assertEquals($expected_unlocked_achievements, $content['unlocked_achievements']);
+        $this->assertEquals($exptected_next_available_achievements, $content['next_available_achievements']);
     }
 }
