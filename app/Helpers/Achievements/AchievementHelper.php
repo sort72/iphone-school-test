@@ -35,6 +35,48 @@ abstract class AchievementHelper
     }
 
     /**
+     * Get a list of unlocked achievements determined by a given quantity
+     * @param int $quantity
+     * @return array
+     */
+    public function unlockedAchievementsList($quantity)
+    {
+        $achievements = [];
+
+        foreach (array_reverse($this->achievementLevels) as $quantity_required => $name) {
+            if($quantity >= $quantity_required) {
+                $achievements[$quantity_required] = $name;
+            }
+            else break;
+        }
+
+        return $achievements;
+    }
+
+    /**
+     * Retrieve next achievement to get determined by a given quantity
+     * @param int $quantity
+     * @return string
+     */
+    public function nextAchievement($quantity)
+    {
+        $current_level = $this->getAchievementLevel($quantity);
+        if(! $current_level) {
+            return array_reverse($this->achievementLevels)[0];
+        }
+        $levels = array_keys($this->achievementLevels);
+        $current_level = array_search($current_level, $levels);
+        $next_level = "";
+        if(isset($levels[$current_level - 1])) {
+            $next_level = $levels[$current_level - 1];
+            $next_level = $this->achievementLevels[$next_level];
+        }
+
+        return $next_level;
+
+    }
+
+    /**
      * Check if a quantity unlocks a new achievement
      * @param int $quantity
      * @return bool

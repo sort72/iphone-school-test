@@ -217,4 +217,24 @@ class AchievementTest extends TestCase
         CommentWritten::dispatch(Comment::first());
         $this->assertTrue(true);
     }
+
+    public function test_next_lesson_watched_achievement()
+    {
+        $achievement = new LessonWatchedHelper();
+
+        // Check if the next achievement ($value) is the expected for a quantity ($key)
+        $data = [
+            0 => 'First Lesson Watched',
+            1 => '5 Lessons Watched',
+            3 => '5 Lessons Watched',
+            10 => '25 Lessons Watched',
+            51 => '',
+        ];
+
+        foreach ($data as $quantity => $next_expected) {
+            $next = $achievement->nextAchievement($quantity);
+            $this->assertEquals($next_expected, $next, 'Failed asserting that ' . $next . ' is equal to expected ' . $next_expected);
+        }
+
+    }
 }
