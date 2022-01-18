@@ -3,7 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\AchievementUnlocked;
+use App\Events\BadgeUnlocked;
 use App\Events\CommentWritten;
+use App\Helpers\Achievements\BadgeHelper;
 use App\Helpers\Achievements\CommentWrittenHelper;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -34,7 +36,15 @@ class CheckCommentsWritten
 
         if($just_unlocked) {
             $achievement_name = $achievement->getAchievementLevel($total_comments_written, false);
-            AchievementUnlocked::dispatch($achievement_name, $event->user);
+            AchievementUnlocked::dispatch($achievement_name, $event->comment->user);
+
+            $achievements_quantity = BadgeHelper::getUserAchievementsQuantity($event->comment->user);
+            $badge_unlocked = BadgeHelper::justUnlockedBadge($achievements_quantity);
+            if($badge_unlocked)
+            {
+                $badge_name = BadgeHelper::getBadgeLevel($achievements_quantity);
+                BadgeUnlocked::dispatch($badge_name, $event->comment->user);
+            }
         }
 
     }

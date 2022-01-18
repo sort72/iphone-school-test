@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Events\CommentWritten;
+use App\Events\LessonWatched;
 use App\Helpers\Achievements\BadgeHelper;
 use App\Helpers\Achievements\CommentWrittenHelper;
 use App\Helpers\Achievements\LessonWatchedHelper;
@@ -202,5 +204,17 @@ class AchievementTest extends TestCase
                 if($value !== $level_value) $this->assertFalse(BadgeHelper::justUnlockedBadge($value));
             }
         }
+    }
+
+    public function test_dispatch_lesson_watched()
+    {
+        LessonWatched::dispatch(Lesson::first(), User::first());
+        $this->assertTrue(true);
+    }
+
+    public function test_dispatch_comment_written()
+    {
+        CommentWritten::dispatch(Comment::first());
+        $this->assertTrue(true);
     }
 }
