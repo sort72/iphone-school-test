@@ -9,9 +9,12 @@ use App\Helpers\Achievements\BadgeHelper;
 use App\Helpers\Achievements\CommentWrittenHelper;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use UnlocksAchievement;
 
 class CheckCommentsWritten
 {
+    use UnlocksAchievement;
+
     /**
      * Create the event listener.
      *
@@ -32,20 +35,8 @@ class CheckCommentsWritten
     {
         $total_comments_written = count($event->comment->user->comments);
         $achievement = new CommentWrittenHelper();
-        $just_unlocked = $achievement->justUnlockedAchievement($total_comments_written);
 
-        if($just_unlocked) {
-            $achievement_name = $achievement->getAchievementLevel($total_comments_written, false);
-            AchievementUnlocked::dispatch($achievement_name, $event->comment->user);
-
-            $achievements_quantity = BadgeHelper::getUserAchievementsQuantity($event->comment->user);
-            $badge_unlocked = BadgeHelper::justUnlockedBadge($achievements_quantity);
-            if($badge_unlocked)
-            {
-                $badge_name = BadgeHelper::getBadgeLevel($achievements_quantity);
-                BadgeUnlocked::dispatch($badge_name, $event->comment->user);
-            }
-        }
+        $this->check_whether_unlocked_achievement($achievement, $event->comment->user, $total_comments_written);
 
     }
 }
